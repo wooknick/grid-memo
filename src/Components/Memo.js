@@ -5,12 +5,12 @@ import PropTypes from "prop-types";
 import { parseUrl } from "query-string";
 import AppContext from "../Context/AppContext";
 
-const MIN_FACTOR = 20;
-const MIN_WIDTH = 16 * MIN_FACTOR;
-const MIN_HEIGHT = 9 * MIN_FACTOR;
-const MAX_FACTOR = 120;
-const MAX_WIDTH = 16 * MAX_FACTOR;
-const MAX_HEIGHT = 9 * MAX_FACTOR;
+const MIN_FACTOR = 1;
+const MIN_WIDTH = 120 * MIN_FACTOR;
+const MIN_HEIGHT = 120 * MIN_FACTOR;
+const MAX_FACTOR = 30;
+const MAX_WIDTH = 120 * MAX_FACTOR;
+const MAX_HEIGHT = 120 * MAX_FACTOR;
 
 const Wrapper = styled.div`
   width: 100%;
@@ -48,7 +48,7 @@ const randomColor = () => {
   return colors[idx];
 };
 
-const YoutubeCard = ({ cardData, updateData, removeData }) => {
+const Memo = ({ cardData, updateData, removeData }) => {
   const { editMode } = useContext(AppContext);
   /**
    * Problem : onDragStop에 deltaX, deltaY 계산 버그 존재함(22.3.12 기준)
@@ -72,7 +72,7 @@ const YoutubeCard = ({ cardData, updateData, removeData }) => {
   };
 
   const handleResizeStop = (_, __, ref) => {
-    const factor = ref.offsetWidth / 16;
+    const factor = ref.offsetWidth / 120;
     const newData = Object.assign(cardData);
     newData.factor = factor;
     updateData(newData);
@@ -95,20 +95,20 @@ const YoutubeCard = ({ cardData, updateData, removeData }) => {
   const defaultStyle = {
     x: cardData.x,
     y: cardData.y,
-    width: 16 * cardData.factor,
-    height: 9 * cardData.factor,
+    width: 120 * cardData.factor,
+    height: 120 * cardData.factor,
   };
 
   return (
     <Rnd
       default={defaultStyle}
-      lockAspectRatio={16 / 9}
+      // lockAspectRatio={1 / 1}
       minWidth={MIN_WIDTH}
       minHeight={MIN_HEIGHT}
       maxWidth={MAX_WIDTH}
       maxHeight={MAX_HEIGHT}
-      resizeGrid={[MIN_WIDTH / 2, MIN_HEIGHT / 2]}
-      dragGrid={[MIN_WIDTH / 2, MIN_HEIGHT / 2]}
+      resizeGrid={[MIN_WIDTH, MIN_HEIGHT]}
+      dragGrid={[MIN_WIDTH, MIN_HEIGHT]}
       bounds="parent"
       onResizeStop={handleResizeStop}
       onDrag={handleDrag}
@@ -121,18 +121,22 @@ const YoutubeCard = ({ cardData, updateData, removeData }) => {
           <Overlay bgColor={color} onDoubleClick={handleDblClickOverlay} />
         )}
         <Content>
-          {cardData.videoId === "" ? (
+          {cardData.content === undefined && (
             <Overlay bgColor={color} onDoubleClick={handleDblClickOverlay} />
-          ) : (
+          )}
+          {cardData.content && cardData.content.type === "youtube" && (
             <iframe
               width="100%"
               height="100%"
-              src={`https://www.youtube.com/embed/${cardData.videoId}`}
+              src="https://www.youtube.com/embed/sdfffafq"
               title="YouTube video player"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
+          )}
+          {cardData.content && cardData.content.type === "text" && (
+            <div>{cardData.content.payload}</div>
           )}
         </Content>
       </Wrapper>
@@ -140,15 +144,18 @@ const YoutubeCard = ({ cardData, updateData, removeData }) => {
   );
 };
 
-export default YoutubeCard;
+export default Memo;
 
-YoutubeCard.propTypes = {
+Memo.propTypes = {
   cardData: PropTypes.shape({
     id: PropTypes.string.isRequired,
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
     factor: PropTypes.number.isRequired,
-    videoId: PropTypes.string.isRequired,
+    content: PropTypes.shape({
+      type: PropTypes.string.isRequired,
+      payload: PropTypes.any.isRequired,
+    }),
   }).isRequired,
   updateData: PropTypes.func.isRequired,
   removeData: PropTypes.func.isRequired,

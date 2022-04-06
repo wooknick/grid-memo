@@ -9,6 +9,15 @@ const Wrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  position: fixed;
+  top: 0;
+  z-index: 10;
+  background-color: white;
+`;
+
+const Space = styled.div`
+  width: 100%;
+  height: 48px;
 `;
 
 const Title = styled.span`
@@ -21,9 +30,12 @@ const Title = styled.span`
 const Header = () => {
   const { toggleEditMode, editMode } = useContext(AppContext);
   return (
-    <Wrapper onClick={() => toggleEditMode()}>
-      <Title>{editMode ? "Edit Mode" : "Play Mode"}</Title>
-    </Wrapper>
+    <>
+      <Space />
+      <Wrapper onClick={() => toggleEditMode()}>
+        <Title>{editMode ? "Edit Mode" : "Play Mode"}</Title>
+      </Wrapper>
+    </>
   );
 };
 

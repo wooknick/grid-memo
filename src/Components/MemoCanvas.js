@@ -1,16 +1,17 @@
 import React, { useEffect, useState, useContext } from "react";
 import styled from "styled-components";
 import { v4 } from "uuid";
-import YoutubeCard from "./YoutubeCard";
+import PropTypes from "prop-types";
+import Memo from "./Memo";
 import AppContext from "../Context/AppContext";
 
 const Wrapper = styled.div`
   position: relative;
   margin: 0 auto;
-  width: 1920px;
-  height: 1080px;
-  aspect-ratio: 16 / 9;
-  background-color: #e3e3e3;
+  width: 6000px;
+  height: 6000px;
+  aspect-ratio: 1;
+  background-color: #222831;
 `;
 
 const Grid = styled.div`
@@ -26,36 +27,62 @@ const Grid = styled.div`
 `;
 
 const GridBox = styled.div`
-  width: 160px;
-  height: 90px;
-  background-color: #e3e3e3;
-  border: 1px solid #aaaaaa;
+  width: 120px;
+  height: 120px;
+  background-color: #222831;
+  border: 1px solid #222831;
+  &:hover {
+    cursor: pointer;
+    background-color: #121519;
+  }
 `;
 
-const YoutubeCanvas = () => {
+const MemoCanvas = ({ scrollTo }) => {
   const { editMode } = useContext(AppContext);
   const [data, setData] = useState([]);
+  const [scroll, setScroll] = useState(undefined);
 
   useEffect(() => {
-    const db = localStorage.getItem("youtube-grid-data");
+    const db = localStorage.getItem("grid-memo");
     if (db) {
       setData(JSON.parse(db));
     } else {
       setData([
-        { id: "0", x: 320, y: 630, factor: 20, videoId: "XA2YEHn-A8Q" },
-        { id: "1", x: 960, y: 180, factor: 50, videoId: "Xuxgu5KwoOA" },
-        { id: "2", x: 640, y: 630, factor: 30, videoId: "y49wGJyxDXs" },
-        { id: "3", x: 320, y: 270, factor: 40, videoId: "2skPtp8hjEM" },
+        {
+          id: "0",
+          x: 3120,
+          y: 2520,
+          factor: 2,
+          content: {
+            type: "text",
+            payload: "시작",
+          },
+        },
       ]);
     }
   }, []);
+
+  useEffect(() => {
+    const lastScroll = localStorage.getItem("grid-memo-scroll");
+    if (lastScroll) {
+      setScroll(JSON.parse(lastScroll));
+    } else {
+      setScroll({ x: 2000, y: 2000 });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (scroll) {
+      scrollTo(scroll.x, scroll.y);
+    }
+  }, [scroll, scrollTo]);
 
   const updateData = obj => {
     const newData = [...data];
     const targetIdx = newData.findIndex(v => v.id === obj.id);
     newData[targetIdx] = obj;
     setData(newData);
-    localStorage.setItem("youtube-grid-data", JSON.stringify(newData));
+    localStorage.setItem("grid-memo", JSON.stringify(newData));
   };
 
   const addData = ({ x, y }) => {
@@ -63,12 +90,12 @@ const YoutubeCanvas = () => {
       id: v4(),
       x,
       y,
-      factor: 20,
-      videoId: "",
+      factor: 1,
+      content: undefined,
     };
     const newData = [...data, newItem];
     setData(newData);
-    localStorage.setItem("youtube-grid-data", JSON.stringify(newData));
+    localStorage.setItem("grid-memo", JSON.stringify(newData));
   };
 
   const removeData = id => {
@@ -76,28 +103,28 @@ const YoutubeCanvas = () => {
     const targetIdx = newData.findIndex(v => v.id === id);
     newData.splice(targetIdx, 1);
     setData(newData);
-    localStorage.setItem("youtube-grid-data", JSON.stringify(newData));
+    localStorage.setItem("grid-memo", JSON.stringify(newData));
   };
 
   const handleDblClick = e => {
     const { target } = e;
     const gridIdx = target.dataset.grididx;
-    const x = Math.min(gridIdx % 12, 10);
-    const y = Math.min(Math.floor(gridIdx / 12), 10);
-    addData({ x: x * 160, y: y * 90 });
+    const x = Math.min(gridIdx % 50, 48);
+    const y = Math.min(Math.floor(gridIdx / 50), 48);
+    addData({ x: x * 120, y: y * 120 });
   };
 
   return (
     <Wrapper>
       {editMode && (
         <Grid onDoubleClick={handleDblClick}>
-          {new Array(144).fill(0).map((_, idx) => (
+          {new Array(2500).fill(0).map((_, idx) => (
             <GridBox key={v4()} data-grididx={idx} />
           ))}
         </Grid>
       )}
       {data.map(d => (
-        <YoutubeCard
+        <Memo
           cardData={d}
           key={d.id}
           updateData={updateData}
@@ -108,4 +135,8 @@ const YoutubeCanvas = () => {
   );
 };
 
-export default YoutubeCanvas;
+export default MemoCanvas;
+
+MemoCanvas.propTypes = {
+  scrollTo: PropTypes.func.isRequired,
+};
