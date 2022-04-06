@@ -1,0 +1,17 @@
+{
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es6": true,
+    "node": true
+  },
+  "extends": ["eslint:recommended", "airbnb", "airbnb/hooks", "prettier"],
+  "plugins": ["react", "import"],
+  "rules": {
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+    "import/prefer-default-export": 0,
+    "react/forbid-prop-types": [0],
+    "react/jsx-props-no-spreading": [0],
+    "react/function-component-definition": [0]
+  }
+}
