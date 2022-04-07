@@ -73,6 +73,7 @@ const EditableDiv = styled.div`
   width: 100%;
   height: 100%;
   font-size: 20px;
+  line-height: 28px;
   display: flex;
   flex-direction: column;
   justify-content: center;
