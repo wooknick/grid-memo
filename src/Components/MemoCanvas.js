@@ -30,7 +30,7 @@ const GridBox = styled.div`
   width: 120px;
   height: 120px;
   background-color: #222831;
-  border: 1px solid #222831;
+  border: 1px solid #313740;
   &:hover {
     cursor: pointer;
     background-color: #121519;
