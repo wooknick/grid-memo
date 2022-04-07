@@ -4,6 +4,7 @@ import { v4 } from "uuid";
 import PropTypes from "prop-types";
 import Memo from "./Memo";
 import AppContext from "../Context/AppContext";
+import { first } from "../dummyData";
 
 const Wrapper = styled.div`
   position: relative;
@@ -47,18 +48,7 @@ const MemoCanvas = ({ scrollTo }) => {
     if (db) {
       setData(JSON.parse(db));
     } else {
-      setData([
-        {
-          id: "0",
-          x: 3120,
-          y: 2520,
-          factor: 2,
-          content: {
-            type: "text",
-            payload: "시작",
-          },
-        },
-      ]);
+      setData(first);
     }
   }, []);
 
