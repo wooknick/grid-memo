@@ -1,25 +1,18 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/aria-role */
-import React, {
-  useState,
-  useContext,
-  useMemo,
-  useEffect,
-  useCallback,
-} from "react";
+/* eslint-disable no-alert */
+import React, { useState, useContext, useMemo, useEffect } from "react";
 import styled from "styled-components";
 import { Rnd } from "react-rnd";
 import PropTypes from "prop-types";
 import { parseUrl } from "query-string";
-import { useDropzone } from "react-dropzone";
 import AppContext from "../Context/AppContext";
+import ImageMemo from "./MemoType/ImageMemo";
+import TextMemo from "./MemoType/TextMemo";
+import YoutubeMemo from "./MemoType/YoutubeMemo";
+import MemoOption from "./MemoOption";
 
-const MIN_FACTOR = 1;
-const MIN_WIDTH = 120 * MIN_FACTOR;
-const MIN_HEIGHT = 120 * MIN_FACTOR;
-const MAX_FACTOR = 30;
-const MAX_WIDTH = 120 * MAX_FACTOR;
-const MAX_HEIGHT = 120 * MAX_FACTOR;
+const FACTOR = 120;
+const MIN = 1;
+const MAX = 30;
 
 const Wrapper = styled.div`
   width: 100%;
@@ -40,20 +33,6 @@ const Content = styled.div`
   background-color: #eeeeee;
 `;
 
-const OptionWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid #333333;
-  background-color: #eeeeee;
-  position: absolute;
-  font-size: 24px;
-  &:hover {
-    cursor: pointer;
-    background-color: #cccccc;
-  }
-`;
-
 const Overlay = styled.div`
   position: absolute;
   top: 0;
@@ -67,44 +46,6 @@ const Overlay = styled.div`
   justify-content: center;
   align-items: center;
   text-transform: uppercase;
-`;
-
-const EditableDiv = styled.div`
-  width: 100%;
-  height: 100%;
-  font-size: 20px;
-  line-height: 28px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  white-space: normal;
-  text-align: center;
-  padding: 16px;
-  background-color: #151a22;
-  color: white;
-  div {
-    width: 100%;
-  }
-`;
-
-const ImageInput = styled.div`
-  width: 100%;
-  height: 100%;
-  font-size: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #5f646b;
-  color: white;
-  text-transform: uppercase;
-`;
-
-const Image = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
 `;
 
 const randomColor = () => {
@@ -121,45 +62,13 @@ const Memo = ({ cardData, updateData, removeData }) => {
    */
   const [position, setPosition] = useState({ x: cardData.x, y: cardData.y });
   const [showOption, setShowOption] = useState(false);
-  const [textContent, setTextContent] = useState("Something Write Here.");
   const color = useMemo(() => randomColor(cardData.id), [cardData.id]);
-  let debounceT;
-  const onDrop = useCallback(
-    acceptedFiles => {
-      acceptedFiles.forEach(file => {
-        const reader = new FileReader();
-
-        reader.onload = e => {
-          const newData = Object.assign(cardData);
-          newData.content = {
-            type: "image",
-            payload: e.target.result,
-          };
-          updateData(newData);
-        };
-
-        reader.readAsDataURL(file);
-      });
-    },
-    [cardData, updateData],
-  );
-
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    accept: "image/jpeg,image/png",
-  });
 
   useEffect(() => {
     if (!editMode) {
       setShowOption(false);
     }
   }, [editMode]);
-
-  useEffect(() => {
-    if (cardData.content && cardData.content.type === "text") {
-      setTextContent(cardData.content.payload);
-    }
-  }, [cardData]);
 
   const handleDrag = (_, data) => {
     const { deltaX, deltaY } = data;
@@ -191,54 +100,44 @@ const Memo = ({ cardData, updateData, removeData }) => {
     }
   };
 
+  const updateMemo = ({ type, payload }) => {
+    const newData = Object.assign(cardData);
+    newData.content = {
+      type,
+      payload,
+    };
+    updateData(newData);
+  };
+
   const handleOption = option => {
     if (option === "delete") {
       removeData(cardData.id);
     } else if (option === "youtube") {
+      /**
+       * type 1 : https://www.youtube.com/watch?v=J8TonSFgDk4
+       * type 2 : https://youtu.be/waIZiufYDjM
+       */
       const url = prompt("복사한 유튜브 주소를 입력해주세요.") || "";
       const parsedUrl = parseUrl(url);
       const newVideoId = parsedUrl.query.v;
       if (newVideoId !== undefined) {
-        const newData = Object.assign(cardData);
-        newData.content = {
-          type: "youtube",
-          payload: newVideoId,
-        };
-        updateData(newData);
+        // type 1
+        updateMemo({ type: "youtube", payload: newVideoId });
+      } else {
+        // type 2
+        const splitUrl = url.split("/");
+        if (splitUrl.length > 3 && splitUrl[2] === "youtu.be") {
+          updateMemo({ type: "youtube", payload: splitUrl[3] });
+        }
       }
       setShowOption(false);
     } else if (option === "text") {
-      const newData = Object.assign(cardData);
-      newData.content = {
-        type: "text",
-        payload: "Something Write Here.",
-      };
-      updateData(newData);
+      updateMemo({ type: "text", payload: "Something Write Here." });
       setShowOption(false);
     } else if (option === "image") {
-      const newData = Object.assign(cardData);
-      newData.content = {
-        type: "image",
-        payload: "",
-      };
-      updateData(newData);
+      updateMemo({ type: "image", payload: "" });
       setShowOption(false);
     }
-  };
-
-  const handleEditableKeyDown = e => {
-    if (debounceT) {
-      clearTimeout(debounceT);
-    }
-    debounceT = setTimeout(() => {
-      const newTextContent = e.target.innerHTML;
-      const newData = Object.assign(cardData);
-      newData.content = {
-        type: "text",
-        payload: newTextContent,
-      };
-      updateData(newData);
-    }, 500);
   };
 
   const defaultStyle = {
@@ -251,13 +150,12 @@ const Memo = ({ cardData, updateData, removeData }) => {
   return (
     <Rnd
       default={defaultStyle}
-      // lockAspectRatio={1 / 1}
-      minWidth={MIN_WIDTH}
-      minHeight={MIN_HEIGHT}
-      maxWidth={MAX_WIDTH}
-      maxHeight={MAX_HEIGHT}
-      resizeGrid={[MIN_WIDTH, MIN_HEIGHT]}
-      dragGrid={[MIN_WIDTH, MIN_HEIGHT]}
+      minWidth={MIN * FACTOR}
+      minHeight={MIN * FACTOR}
+      maxWidth={MAX * FACTOR}
+      maxHeight={MAX * FACTOR}
+      resizeGrid={[MIN * FACTOR, MIN * FACTOR]}
+      dragGrid={[MIN * FACTOR, MIN * FACTOR]}
       bounds="parent"
       onResizeStop={handleResizeStop}
       onDrag={handleDrag}
@@ -274,51 +172,47 @@ const Memo = ({ cardData, updateData, removeData }) => {
         )}
         {showOption && (
           <>
-            <OptionWrapper
+            <MemoOption
+              type="image"
+              handleOption={handleOption}
               style={{
-                width: `${MIN_WIDTH}px`,
-                height: `${MIN_HEIGHT}px`,
-                top: `-${MIN_HEIGHT}px`,
+                width: `${MIN * FACTOR}px`,
+                height: `${MIN * FACTOR}px`,
+                top: `-${MIN * FACTOR}px`,
                 left: `0px`,
               }}
-              onClick={() => handleOption("image")}
-            >
-              Image
-            </OptionWrapper>
-            <OptionWrapper
+            />
+            <MemoOption
+              type="youtube"
+              handleOption={handleOption}
               style={{
-                width: `${MIN_WIDTH}px`,
-                height: `${MIN_HEIGHT}px`,
-                top: `-${MIN_HEIGHT}px`,
-                left: `${MIN_WIDTH}px`,
+                width: `${MIN * FACTOR}px`,
+                height: `${MIN * FACTOR}px`,
+                top: `-${MIN * FACTOR}px`,
+                left: `${MIN * FACTOR}px`,
               }}
-              onClick={() => handleOption("youtube")}
-            >
-              Youtube
-            </OptionWrapper>
-            <OptionWrapper
+            />
+            <MemoOption
+              type="text"
+              handleOption={handleOption}
               style={{
-                width: `${MIN_WIDTH}px`,
-                height: `${MIN_HEIGHT}px`,
-                top: `-${MIN_HEIGHT}px`,
-                left: `${MIN_WIDTH * 2}px`,
+                width: `${MIN * FACTOR}px`,
+                height: `${MIN * FACTOR}px`,
+                top: `-${MIN * FACTOR}px`,
+                left: `${MIN * FACTOR * 2}px`,
               }}
-              onClick={() => handleOption("text")}
-            >
-              Text
-            </OptionWrapper>
-            <OptionWrapper
+            />
+            <MemoOption
+              type="delete"
+              handleOption={handleOption}
               style={{
-                width: `${MIN_WIDTH}px`,
-                height: `${MIN_HEIGHT}px`,
-                bottom: `-${MIN_HEIGHT}px`,
+                width: `${MIN * FACTOR}px`,
+                height: `${MIN * FACTOR}px`,
+                bottom: `-${MIN * FACTOR}px`,
                 left: `0px`,
                 color: "#ab0000",
               }}
-              onClick={() => handleOption("delete")}
-            >
-              Delete
-            </OptionWrapper>
+            />
           </>
         )}
         <Content>
@@ -328,37 +222,14 @@ const Memo = ({ cardData, updateData, removeData }) => {
             </Overlay>
           )}
           {cardData.content && cardData.content.type === "youtube" && (
-            <iframe
-              width="100%"
-              height="100%"
-              src={`https://www.youtube.com/embed/${cardData.content.payload}`}
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+            <YoutubeMemo cardData={cardData} />
           )}
           {cardData.content && cardData.content.type === "text" && (
-            <EditableDiv
-              contentEditable="true"
-              role="editor"
-              onKeyDown={handleEditableKeyDown}
-              dangerouslySetInnerHTML={{ __html: textContent }}
-            />
+            <TextMemo cardData={cardData} updateMemo={updateMemo} />
           )}
-          {cardData.content &&
-            cardData.content.type === "image" &&
-            cardData.content.payload === "" && (
-              <ImageInput {...getRootProps()} role="editor">
-                <input {...getInputProps()} />
-                <span>Click n Add Image</span>
-              </ImageInput>
-            )}
-          {cardData.content &&
-            cardData.content.type === "image" &&
-            cardData.content.payload !== "" && (
-              <Image alt="memoImage" src={cardData.content.payload} />
-            )}
+          {cardData.content && cardData.content.type === "image" && (
+            <ImageMemo cardData={cardData} updateMemo={updateMemo} />
+          )}
         </Content>
       </Wrapper>
     </Rnd>
