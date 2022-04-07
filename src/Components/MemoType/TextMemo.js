@@ -12,8 +12,8 @@ const Wrapper = styled.div`
 const EditableDiv = styled.div`
   width: 100%;
   height: 100%;
-  font-size: 20px;
-  line-height: 28px;
+  font-size: 28px;
+  line-height: 32px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -39,6 +39,7 @@ const TextMemo = ({ cardData, updateMemo }) => {
   }, [cardData]);
 
   const handleEditableKeyDown = e => {
+    e.stopPropagation();
     if (debounceT) {
       clearTimeout(debounceT);
     }
