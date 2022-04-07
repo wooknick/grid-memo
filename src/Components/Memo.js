@@ -64,6 +64,8 @@ const Memo = ({ cardData, updateData, removeData }) => {
   const [showOption, setShowOption] = useState(false);
   const color = useMemo(() => randomColor(cardData.id), [cardData.id]);
 
+  let touchT;
+
   useEffect(() => {
     if (!editMode) {
       setShowOption(false);
@@ -71,6 +73,9 @@ const Memo = ({ cardData, updateData, removeData }) => {
   }, [editMode]);
 
   const handleDrag = (_, data) => {
+    if (touchT) {
+      clearTimeout(touchT);
+    }
     const { deltaX, deltaY } = data;
     const newPosition = { x: position.x + deltaX, y: position.y + deltaY };
     setPosition(newPosition);
@@ -97,6 +102,18 @@ const Memo = ({ cardData, updateData, removeData }) => {
       setShowOption(v => !v);
     } else {
       // 뷰 기능
+    }
+  };
+
+  const handleTouchStartOverlay = () => {
+    touchT = setTimeout(() => {
+      handleDblClickOverlay();
+    }, 800);
+  };
+
+  const handleTouchEndOverlay = () => {
+    if (touchT) {
+      clearTimeout(touchT);
     }
   };
 
@@ -166,7 +183,12 @@ const Memo = ({ cardData, updateData, removeData }) => {
     >
       <Wrapper>
         {editMode && (
-          <Overlay bgColor={color} onDoubleClick={handleDblClickOverlay}>
+          <Overlay
+            bgColor={color}
+            onDoubleClick={handleDblClickOverlay}
+            onTouchStart={handleTouchStartOverlay}
+            onTouchEnd={handleTouchEndOverlay}
+          >
             <span>{cardData.content ? cardData.content.type : "Blank"}</span>
           </Overlay>
         )}
@@ -217,7 +239,12 @@ const Memo = ({ cardData, updateData, removeData }) => {
         )}
         <Content>
           {cardData.content === undefined && (
-            <Overlay bgColor={color} onDoubleClick={handleDblClickOverlay}>
+            <Overlay
+              bgColor={color}
+              onDoubleClick={handleDblClickOverlay}
+              onTouchStart={handleTouchStartOverlay}
+              onTouchEnd={handleTouchEndOverlay}
+            >
               <span>Blank</span>
             </Overlay>
           )}

@@ -18,7 +18,11 @@ const Wrapper = styled.div`
 `;
 
 const MemoOption = ({ type, handleOption, style }) => (
-  <Wrapper style={style} onClick={() => handleOption(type)}>
+  <Wrapper
+    style={style}
+    onClick={() => handleOption(type)}
+    onTouchStart={() => handleOption(type)}
+  >
     {type}
   </Wrapper>
 );
