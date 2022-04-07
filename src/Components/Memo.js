@@ -1,10 +1,17 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/aria-role */
-import React, { useState, useContext, useMemo, useEffect } from "react";
+import React, {
+  useState,
+  useContext,
+  useMemo,
+  useEffect,
+  useCallback,
+} from "react";
 import styled from "styled-components";
 import { Rnd } from "react-rnd";
 import PropTypes from "prop-types";
 import { parseUrl } from "query-string";
+import { useDropzone } from "react-dropzone";
 import AppContext from "../Context/AppContext";
 
 const MIN_FACTOR = 1;
@@ -80,6 +87,25 @@ const EditableDiv = styled.div`
   }
 `;
 
+const ImageInput = styled.div`
+  width: 100%;
+  height: 100%;
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #5f646b;
+  color: white;
+  text-transform: uppercase;
+`;
+
+const Image = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+`;
+
 const randomColor = () => {
   const colors = ["#F23847", "#95BF8A", "#DAF2C2", "#F2D027", "#F2916D"];
   const idx = Math.floor(Math.random() * colors.length);
@@ -96,8 +122,31 @@ const Memo = ({ cardData, updateData, removeData }) => {
   const [showOption, setShowOption] = useState(false);
   const [textContent, setTextContent] = useState("Something Write Here.");
   const color = useMemo(() => randomColor(cardData.id), [cardData.id]);
-
   let debounceT;
+  const onDrop = useCallback(
+    acceptedFiles => {
+      acceptedFiles.forEach(file => {
+        const reader = new FileReader();
+
+        reader.onload = e => {
+          const newData = Object.assign(cardData);
+          newData.content = {
+            type: "image",
+            payload: e.target.result,
+          };
+          updateData(newData);
+        };
+
+        reader.readAsDataURL(file);
+      });
+    },
+    [cardData, updateData],
+  );
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: "image/jpeg,image/png",
+  });
 
   useEffect(() => {
     if (!editMode) {
@@ -165,6 +214,14 @@ const Memo = ({ cardData, updateData, removeData }) => {
       };
       updateData(newData);
       setShowOption(false);
+    } else if (option === "image") {
+      const newData = Object.assign(cardData);
+      newData.content = {
+        type: "image",
+        payload: "",
+      };
+      updateData(newData);
+      setShowOption(false);
     }
   };
 
@@ -223,6 +280,7 @@ const Memo = ({ cardData, updateData, removeData }) => {
                 top: `-${MIN_HEIGHT}px`,
                 left: `0px`,
               }}
+              onClick={() => handleOption("image")}
             >
               Image
             </OptionWrapper>
@@ -287,6 +345,19 @@ const Memo = ({ cardData, updateData, removeData }) => {
               dangerouslySetInnerHTML={{ __html: textContent }}
             />
           )}
+          {cardData.content &&
+            cardData.content.type === "image" &&
+            cardData.content.payload === "" && (
+              <ImageInput {...getRootProps()} role="editor">
+                <input {...getInputProps()} />
+                <span>Click n Add Image</span>
+              </ImageInput>
+            )}
+          {cardData.content &&
+            cardData.content.type === "image" &&
+            cardData.content.payload !== "" && (
+              <Image alt="memoImage" src={cardData.content.payload} />
+            )}
         </Content>
       </Wrapper>
     </Rnd>
