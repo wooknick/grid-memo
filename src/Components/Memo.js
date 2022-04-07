@@ -90,9 +90,11 @@ const Memo = ({ cardData, updateData, removeData }) => {
   };
 
   const handleResizeStop = (_, __, ref) => {
-    const factor = ref.offsetWidth / 120;
+    const width = ref.offsetWidth / 120;
+    const height = ref.offsetHeight / 120;
     const newData = Object.assign(cardData);
-    newData.factor = factor;
+    newData.width = width;
+    newData.height = height;
     updateData(newData);
   };
 
@@ -160,8 +162,8 @@ const Memo = ({ cardData, updateData, removeData }) => {
   const defaultStyle = {
     x: cardData.x,
     y: cardData.y,
-    width: 120 * cardData.factor,
-    height: 120 * cardData.factor,
+    width: FACTOR * cardData.width,
+    height: FACTOR * cardData.height,
   };
 
   return (
@@ -270,7 +272,8 @@ Memo.propTypes = {
     id: PropTypes.string.isRequired,
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
-    factor: PropTypes.number.isRequired,
+    width: PropTypes.number.isRequired,
+    height: PropTypes.number.isRequired,
     content: PropTypes.shape({
       type: PropTypes.string.isRequired,
       payload: PropTypes.any.isRequired,

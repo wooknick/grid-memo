@@ -28,7 +28,8 @@ YoutubeMemo.propTypes = {
     id: PropTypes.string.isRequired,
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
-    factor: PropTypes.number.isRequired,
+    width: PropTypes.number.isRequired,
+    height: PropTypes.number.isRequired,
     content: PropTypes.shape({
       type: PropTypes.string.isRequired,
       payload: PropTypes.any.isRequired,

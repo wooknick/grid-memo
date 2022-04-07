@@ -19,7 +19,12 @@ const ImageInput = styled.div`
   align-items: center;
   background-color: #5f646b;
   color: white;
-  text-transform: uppercase;
+  text-align: center;
+  padding: 8px;
+  line-height: 24px;
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
 const Image = styled.img`
@@ -56,7 +61,7 @@ const ImageMemo = ({ cardData, updateMemo }) => {
         cardData.content.payload === "" && (
           <ImageInput {...getRootProps()} role="editor">
             <input {...getInputProps()} />
-            <span>Click n Add Image</span>
+            <span>Select Image</span>
           </ImageInput>
         )}
       {cardData.content &&
@@ -75,7 +80,8 @@ ImageMemo.propTypes = {
     id: PropTypes.string.isRequired,
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
-    factor: PropTypes.number.isRequired,
+    width: PropTypes.number.isRequired,
+    height: PropTypes.number.isRequired,
     content: PropTypes.shape({
       type: PropTypes.string.isRequired,
       payload: PropTypes.any.isRequired,
