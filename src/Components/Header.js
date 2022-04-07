@@ -4,24 +4,27 @@ import AppContext from "../Context/AppContext";
 
 const Wrapper = styled.div`
   width: 100%;
-  height: 48px;
-  border-bottom: 1px solid #e3e3e3;
+  height: 56px;
+  /* border-bottom: 4px solid #9e9e9e; */
+  color: white;
   display: flex;
   justify-content: center;
   align-items: center;
   position: fixed;
   top: 0;
   z-index: 10;
-  background-color: white;
+  background-color: #181c22;
 `;
 
 const Space = styled.div`
   width: 100%;
-  height: 48px;
+  height: 56px;
 `;
 
 const Title = styled.span`
-  font-size: 24px;
+  font-size: 32px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 900;
   &:hover {
     cursor: pointer;
   }
@@ -33,7 +36,7 @@ const Header = () => {
     <>
       <Space />
       <Wrapper onClick={() => toggleEditMode()}>
-        <Title>{editMode ? "Edit Mode" : "Play Mode"}</Title>
+        <Title>{editMode ? "GRID MEMO - edit" : "GRID MEMO"}</Title>
       </Wrapper>
     </>
   );
