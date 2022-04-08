@@ -57,7 +57,7 @@ const MemoCanvas = ({ scrollTo }) => {
     if (lastScroll) {
       setScroll(JSON.parse(lastScroll));
     } else {
-      setScroll({ x: 2000, y: 2000 });
+      setScroll({ x: 2300, y: 2200 });
     }
   }, []);
 
