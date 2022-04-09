@@ -80,7 +80,8 @@ const MemoCanvas = ({ scrollTo }) => {
       id: v4(),
       x,
       y,
-      factor: 1,
+      width: 1,
+      height: 1,
       content: undefined,
     };
     const newData = [...data, newItem];
